@@ -2,11 +2,12 @@ import re
 from robobrowser import RoboBrowser
 import pickle
 
-ids = ''
 
 f = open('../movie_ids.txt')
 start_line = int(input('Start at line (inclusive): '));
 end_line = int(input('End at line (inclusive): '));
+
+counter = 0
 
 for i, line in enumerate(f):
     movie_id = line.replace('\n', '')
@@ -21,6 +22,13 @@ for i, line in enumerate(f):
 
         browser.open('http://www.imdb.com/title/'+movie_id)
         poster_tag = str(browser.find(class_=re.compile(r'\bposter\b')))
+        browser.select('id.itleDetails')
+        country = str(browser.find(href=re.compile(r'\b\?country')).text)
+
+        if country != 'USA':
+            print('Not USA')
+            continue
+
         if poster_tag == "None":
             print('None')
             continue
@@ -46,10 +54,11 @@ for i, line in enumerate(f):
             with open('../posters/'+movie_id+'.jpg', 'wb') as j:
                 j.write(request.content)
 
+            counter += 1
             print('Done')
         except:
             print("Fail!")
     except:
         print('Timeout')
 
-print('Downloaded')
+print('Downloaded', counter, 'posters')
