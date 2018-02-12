@@ -4,18 +4,25 @@ from robobrowser import RoboBrowser
 ids = ''
 
 f = open('../movie_ids.txt')
+start_line = int(input('Start at line (inclusive): '));
+end_line = int(input('End at line (inclusive): '));
 
-for i in range(100):
-    movie_id = f.readline().replace('\n', '')
-    print(i+1, movie_id)
-
+for i, line in enumerate(f):
+    movie_id = line.replace('\n', '')
+    if i + 1 < start_line:
+        continue
+    if i + 1 > end_line:
+        break
+    print(i + 1, movie_id, end='\t')
 
     browser = RoboBrowser(history=True, parser='html.parser')
 
     browser.open('http://www.imdb.com/title/'+movie_id)
     poster_tag = str(browser.find(class_=re.compile(r'\bposter\b')))
     if poster_tag == "None":
+        print('')
         continue
+
     viewer_url = 'http://www.imdb.com/'+poster_tag.split('"')[3]
     viewer_url = viewer_url.split("?")[0]
     browser.open(viewer_url)
@@ -35,3 +42,7 @@ for i in range(100):
     browser.open(img_url)
     with open('../posters/'+movie_id+'.jpg', 'wb') as j:
         j.write(request.content)
+
+    print('success')
+
+print('downloaded')
