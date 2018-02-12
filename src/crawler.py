@@ -1,5 +1,6 @@
 import re
 from robobrowser import RoboBrowser
+import pickle
 
 ids = ''
 
@@ -13,36 +14,42 @@ for i, line in enumerate(f):
         continue
     if i + 1 > end_line:
         break
+
     print(i + 1, movie_id, end='\t')
+    try:
+        browser = RoboBrowser(history=True, parser='html.parser', timeout=10)
 
-    browser = RoboBrowser(history=True, parser='html.parser')
+        browser.open('http://www.imdb.com/title/'+movie_id)
+        poster_tag = str(browser.find(class_=re.compile(r'\bposter\b')))
+        if poster_tag == "None":
+            print('None')
+            continue
 
-    browser.open('http://www.imdb.com/title/'+movie_id)
-    poster_tag = str(browser.find(class_=re.compile(r'\bposter\b')))
-    if poster_tag == "None":
-        print('')
-        continue
+        try:
+            viewer_url = 'http://www.imdb.com/'+poster_tag.split('"')[3]
+            viewer_url = viewer_url.split("?")[0]
+            browser.open(viewer_url)
 
-    viewer_url = 'http://www.imdb.com/'+poster_tag.split('"')[3]
-    viewer_url = viewer_url.split("?")[0]
-    browser.open(viewer_url)
+            img_id = str(browser.find('link')).split('"')[1].split('/')[-1]
+            gallery = str(browser.find('script'))
 
-    img_id = str(browser.find('link')).split('"')[1].split('/')[-1]
-    gallery = str(browser.find('script'))
+            start = gallery.find('"id":"' + img_id + '"')
+            if start != -1:
+                start = gallery.find('"src"', start)
+                if start != -1:
+                    end = gallery.find('"w"', start)
+                    img_url = gallery[start:end].split('"')[3]
 
-    start = gallery.find('"id":"' + img_id + '"')
-    if start != -1:
-        start = gallery.find('"src"', start)
-        if start != -1:
-            end = gallery.find('"w"', start)
-            img_url = gallery[start:end].split('"')[3]
+            request = browser.session.get(img_url, stream=True)
 
-    request = browser.session.get(img_url, stream=True)
+            browser.open(img_url)
+            with open('../posters/'+movie_id+'.jpg', 'wb') as j:
+                j.write(request.content)
 
-    browser.open(img_url)
-    with open('../posters/'+movie_id+'.jpg', 'wb') as j:
-        j.write(request.content)
+            print('Done')
+        except:
+            print("Fail!")
+    except:
+        print('Timeout')
 
-    print('success')
-
-print('downloaded')
+print('Downloaded')
