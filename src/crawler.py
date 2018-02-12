@@ -77,12 +77,10 @@ for i, line in enumerate(f):
             counter += 1
             print('Done')
         except:
-            raise
             print("Fail!")
     except KeyboardInterrupt:
         raise
     except :
-        raise
         print('Timeout')
 
 print('Downloaded', counter, 'posters')
