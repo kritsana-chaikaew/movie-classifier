@@ -27,3 +27,6 @@ $ python crawler.py
 Start at line (inclusive): 1
 End at line (inclusive): 100
 ```
+Script will create a file named i-j.txt where i is a start line number and j is an end line number.
+So, you can split data and download a chunk of it multiple times.
+Recommneded size is 1000-2000 lines per file, downloading time is about an hour depends on connection speed.
