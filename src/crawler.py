@@ -1,5 +1,6 @@
 import re
 from robobrowser import RoboBrowser
+import pickle
 
 def pad(num):
     s = str(num)
@@ -40,6 +41,8 @@ for i, line in enumerate(f):
             genres[j] = str(genres[j]).split('> ')[1].split('<')[0]
         genres = str(genres).replace('[', '').replace(']', '')
         genres = genres.replace(', ', ':')
+        genres = genres.replace('\'', '')
+
         print(genres)
 
         if country not in countries:
