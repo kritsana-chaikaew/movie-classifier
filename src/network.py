@@ -10,6 +10,8 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.advanced_activations import LeakyReLU
 
+from keras.preprocessing.image import ImageDataGenerator
+
 file_data = h5py.File('dataset.h5py', 'r')
 X = file_data['X'][:]
 Y = file_data['Y'][:]
@@ -17,26 +19,33 @@ Y_one_hot = file_data['Y_one_hot'][:]
 classes = file_data['genres_unique'][:]
 file_data.close()
 
-train_X, test_X, train_Y_one_hot, test_Y_one_hot = train_test_split(X, Y_one_hot, test_size=0.15, random_state=13)
-print(train_X.shape, test_X.shape, train_Y_one_hot.shape, test_Y_one_hot.shape)
+train_X, test_X, train_Y_one_hot, test_Y_one_hot = \
+        train_test_split(X, Y_one_hot, test_size=0.15, random_state=13)
 
-train_X, valid_X, train_label, valid_label = train_test_split(train_X, train_Y_one_hot, test_size=0.2, random_state=13)
-print(train_X.shape, valid_X.shape, train_label.shape, valid_label.shape)
+train_X, valid_X, train_label, valid_label = \
+        train_test_split(
+                train_X, train_Y_one_hot,
+                test_size=0.2, random_state=13)
 
 batch_size = 64
-epochs = 100
+epochs = 20
 num_classes = 21
 
 movie_model = Sequential()
-movie_model.add(Conv2D(32, kernel_size=(3, 3),activation='linear',padding='same',input_shape=(90,60,3)))
+movie_model.add(Conv2D(
+        32,
+        kernel_size=(3, 3),
+        activation='linear',
+        padding='same',
+        input_shape=(90,60,3)))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D((2, 2),padding='same'))
-movie_model.add(Dropout(0.1))
+movie_model.add(Dropout(0.2))
 
 movie_model.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
+movie_model.add(Dropout(0.3))
 
 movie_model.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
@@ -46,12 +55,38 @@ movie_model.add(Dropout(0.3))
 movie_model.add(Flatten())
 movie_model.add(Dense(128, activation='linear'))
 movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(Dropout(0.4))
+movie_model.add(Dropout(0.3))
 movie_model.add(Dense(num_classes, activation='softmax'))
 
-movie_model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(lr=0.000001),metrics=['accuracy'])
+movie_model.compile(
+        loss=keras.losses.categorical_crossentropy,
+        optimizer=keras.optimizers.Adam(),
+        metrics=['accuracy'])
 
-movie_train = movie_model.fit(train_X, train_label, batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(valid_X, valid_label))
+datagen = ImageDataGenerator(
+        rotation_range=20,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        shear_range=0.1,
+        zoom_range=0.1,
+        horizontal_flip=True,
+        fill_mode='nearest')
+
+movie_train = movie_model.fit_generator(
+        datagen.flow(train_X, train_label, batch_size=batch_size),
+        steps_per_epoch=len(train_X)//batch_size,
+        epochs=epochs, verbose=1,
+        validation_data=datagen.flow(
+                valid_X, valid_label,
+                batch_size=batch_size),
+        validation_steps=len(valid_X)//batch_size)
+
+
+movie_train = movie_model.fit(
+        train_X, train_label,
+        batch_size=batch_size,
+        epochs=epochs,verbose=1,
+        validation_data=(valid_X, valid_label))
 
 test_eval = movie_model.evaluate(test_X, test_Y_one_hot, verbose=0)
 print('Test loss:', test_eval[0])
