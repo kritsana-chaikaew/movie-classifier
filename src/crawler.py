@@ -2,16 +2,18 @@ import re
 from robobrowser import RoboBrowser
 import pickle
 import time
+import os
 
 def pad(num):
     s = str(num)
-    return '000000'[0:6-len(s)]+s
+    return '000000'[0:6-len(s)] + s
 
 f = open('../movie_ids.txt')
 start_line = int(input('Start at line (inclusive): '));
 end_line = int(input('End at line (inclusive): '));
 
 path_name = pad(start_line) + '-' + pad(end_line)
+temp_file = '../' + path_name + '.tmp'
 
 countries = ['USA', 'UK', 'Thai']
 counter = 0
@@ -23,9 +25,8 @@ for i, line in enumerate(f):
     if i + 1 > end_line:
         break
 
-    print(i + 1, movie_id, end='\t')
-
     while True:
+        print(i + 1, movie_id, end='\t')
         try:
             browser = RoboBrowser(history=True, parser='html.parser', timeout=10)
 
@@ -76,7 +77,7 @@ for i, line in enumerate(f):
                 with open('../posters/'+movie_id+'.jpg', 'wb') as j:
                     j.write(request.content)
 
-                with open('../'+path_name+'.txt', 'a') as g:
+                with open(temp_file, 'a') as g:
                     g.write(movie_id+','+genres+'\n')
 
                 counter += 1
@@ -86,9 +87,21 @@ for i, line in enumerate(f):
         except KeyboardInterrupt:
             exit()
         except:
-            print('Timeout, Retry')
+            print('Timeout, Retrying')
             time.sleep(5)
             continue
         break
+
+with open(temp_file, 'r') as duplicate:
+    lines=duplicate.readlines()
+    uniquelines=set(lines)
+
+    with open('../'+path_name+'.txt', 'w') as unique:
+        unique.writelines(uniquelines)
+
+try:
+    os.remove(temp_file)
+except:
+    pass
 
 print('Downloaded', counter, 'posters')
