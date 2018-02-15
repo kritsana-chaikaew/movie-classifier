@@ -12,12 +12,16 @@ from keras.layers.advanced_activations import LeakyReLU
 
 from keras.preprocessing.image import ImageDataGenerator
 
-file_data = h5py.File('test.h5py', 'r')
-X = file_data['X'][:]
-Y = file_data['Y'][:]
-Y_one_hot = file_data['Y_one_hot'][:]
-classes = file_data['genres_unique'][:]
-file_data.close()
+dataset_name = str(input('Dataset Name: '))
+augmentation = str(input('Data Augmentation [y/N]: '))
+
+with h5py.File(dataset_name+'.h5py', 'r') as file_data:
+    X = file_data['X'][:]
+    Y = file_data['Y'][:]
+    Y_one_hot = file_data['Y_one_hot'][:]
+    classes = file_data['genres_unique'][:]
+
+print('Data shape: ', X.shape)
 
 train_X, test_X, train_Y_one_hot, test_Y_one_hot = \
         train_test_split(X, Y_one_hot, test_size=0.15, random_state=13)
@@ -27,7 +31,7 @@ train_X, valid_X, train_label, valid_label = \
                 train_X, train_Y_one_hot,
                 test_size=0.2, random_state=13)
 
-batch_size = 64
+batch_size = 1
 epochs = 20
 num_classes = len(classes)
 
@@ -60,33 +64,34 @@ movie_model.add(Dense(num_classes, activation='softmax'))
 
 movie_model.compile(
         loss=keras.losses.categorical_crossentropy,
-        optimizer=keras.optimizers.Adam(),
+        optimizer=keras.optimizers.Adam(lr=0.001),
         metrics=['accuracy'])
 
-# datagen = ImageDataGenerator(
-#         rotation_range=20,
-#         width_shift_range=0.1,
-#         height_shift_range=0.1,
-#         shear_range=0.1,
-#         zoom_range=0.1,
-#         horizontal_flip=True,
-#         fill_mode='nearest')
-#
-# movie_train = movie_model.fit_generator(
-#         datagen.flow(train_X, train_label, batch_size=batch_size),
-#         steps_per_epoch=len(train_X)//batch_size,
-#         epochs=epochs, verbose=1,
-#         validation_data=datagen.flow(
-#                 valid_X, valid_label,
-#                 batch_size=batch_size),
-#         validation_steps=len(valid_X)//batch_size)
+if augmentation == 'y' or augmentation == 'Y':
+    print('using data augmentation')
+    datagen = ImageDataGenerator(
+            rotation_range=20,
+            width_shift_range=0.1,
+            height_shift_range=0.1,
+            shear_range=0.1,
+            zoom_range=0.1,
+            horizontal_flip=True,
+            fill_mode='nearest')
 
-
-movie_train = movie_model.fit(
-        train_X, train_label,
-        batch_size=batch_size,
-        epochs=epochs,verbose=1,
-        validation_data=(valid_X, valid_label))
+    movie_train = movie_model.fit_generator(
+            datagen.flow(train_X, train_label, batch_size=batch_size),
+            steps_per_epoch=len(train_X)//batch_size,
+            epochs=epochs, verbose=1,
+            validation_data=datagen.flow(
+                    valid_X, valid_label,
+                    batch_size=batch_size),
+            validation_steps=len(valid_X)//batch_size)
+else:
+    movie_train = movie_model.fit(
+            train_X, train_label,
+            batch_size=batch_size,
+            epochs=epochs,verbose=1,
+            validation_data=(valid_X, valid_label))
 
 test_eval = movie_model.evaluate(test_X, test_Y_one_hot, verbose=0)
 print('Test loss:', test_eval[0])
