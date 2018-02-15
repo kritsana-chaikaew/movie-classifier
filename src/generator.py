@@ -11,8 +11,8 @@ import glob
 import os
 import gc
 
-IMAGE_WIDTH = 100
-IMAGE_HEIGHT = 150
+IMAGE_WIDTH = 60
+IMAGE_HEIGHT = 90
 
 def img2arr(img):
     arr = np.expand_dims(img_to_array(img), axis=0).astype('float32') / 255

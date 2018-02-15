@@ -12,7 +12,7 @@ from keras.layers.advanced_activations import LeakyReLU
 
 from keras.preprocessing.image import ImageDataGenerator
 
-file_data = h5py.File('dataset.h5py', 'r')
+file_data = h5py.File('test.h5py', 'r')
 X = file_data['X'][:]
 Y = file_data['Y'][:]
 Y_one_hot = file_data['Y_one_hot'][:]
@@ -29,7 +29,7 @@ train_X, valid_X, train_label, valid_label = \
 
 batch_size = 64
 epochs = 20
-num_classes = 21
+num_classes = len(classes)
 
 movie_model = Sequential()
 movie_model.add(Conv2D(
@@ -37,7 +37,7 @@ movie_model.add(Conv2D(
         kernel_size=(3, 3),
         activation='linear',
         padding='same',
-        input_shape=(90,60,3)))
+        input_shape=(X.shape[1], X.shape[2], 3)))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D((2, 2),padding='same'))
 movie_model.add(Dropout(0.2))
@@ -63,23 +63,23 @@ movie_model.compile(
         optimizer=keras.optimizers.Adam(),
         metrics=['accuracy'])
 
-datagen = ImageDataGenerator(
-        rotation_range=20,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        shear_range=0.1,
-        zoom_range=0.1,
-        horizontal_flip=True,
-        fill_mode='nearest')
-
-movie_train = movie_model.fit_generator(
-        datagen.flow(train_X, train_label, batch_size=batch_size),
-        steps_per_epoch=len(train_X)//batch_size,
-        epochs=epochs, verbose=1,
-        validation_data=datagen.flow(
-                valid_X, valid_label,
-                batch_size=batch_size),
-        validation_steps=len(valid_X)//batch_size)
+# datagen = ImageDataGenerator(
+#         rotation_range=20,
+#         width_shift_range=0.1,
+#         height_shift_range=0.1,
+#         shear_range=0.1,
+#         zoom_range=0.1,
+#         horizontal_flip=True,
+#         fill_mode='nearest')
+#
+# movie_train = movie_model.fit_generator(
+#         datagen.flow(train_X, train_label, batch_size=batch_size),
+#         steps_per_epoch=len(train_X)//batch_size,
+#         epochs=epochs, verbose=1,
+#         validation_data=datagen.flow(
+#                 valid_X, valid_label,
+#                 batch_size=batch_size),
+#         validation_steps=len(valid_X)//batch_size)
 
 
 movie_train = movie_model.fit(
