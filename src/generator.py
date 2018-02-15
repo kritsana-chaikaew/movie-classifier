@@ -8,10 +8,15 @@ import matplotlib.pyplot as plt
 import h5py
 import sys
 import glob
+import os
+import gc
+
+IMAGE_WIDTH = 100
+IMAGE_HEIGHT = 150
 
 def img2arr(img):
     arr = np.expand_dims(img_to_array(img), axis=0).astype('float32') / 255
-    arr.resize(1, 90, 60, 3)
+    arr.resize(1, IMAGE_HEIGHT, IMAGE_WIDTH, 3)
     return arr.copy()
 
 file_name = str(input('File name: '));
@@ -34,6 +39,7 @@ for filename in files:
 
 ids = ids_genres[:, 0]
 genre_sets = ids_genres[:, 1]
+print(ids.shape)
 
 # one genre
 for genre_set in genre_sets:
@@ -47,21 +53,34 @@ for i, genre in enumerate(genres_unique):
     int_map[genre] = i
 
 Y = [int_map[genre] for genre in genres]
-
 Y_one_hot = to_categorical(Y)
+X = np.empty((0, IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype='float32')
 
-img_size = (60, 90)
+files_num = len(ids)
+is_preview = False
 
-X = np.empty((0, 90, 60, 3), dtype='float32')
+for i in range(files_num):
+    image_path = '../posters/' + ids[i].decode('utf-8') + '.jpg'
 
-for i in range(len(ids)):
-    image = Image.open('../posters/'+ids[i].decode('utf-8')+'.jpg')
-    resized_image = image.resize(img_size, Image.NEAREST)
-    X = np.append(X, img2arr(resized_image), axis=0)
+    if os.path.exists(image_path):
+        with open(image_path, 'rb') as f:
+            image = Image.open(f)
+            resized_image = image.resize(
+                    (IMAGE_WIDTH, IMAGE_HEIGHT),
+                    Image.NEAREST)
+            X = np.append(X, img2arr(resized_image), axis=0)
+            image.close()
+            gc.collect()
 
-    sys.stdout.write("\b"*10)
+            if not is_preview:
+                plt.imshow(X[0])
+                plt.title(ids[i].decode('utf-8'))
+                plt.show()
+                is_preview = True
+
+    sys.stdout.write("\b"*20)
     sys.stdout.flush()
-    sys.stdout.write("{}\t%".format(i/40))
+    sys.stdout.write("{0:.2f} %".format(i*100/files_num))
     sys.stdout.flush()
 
 file_data = h5py.File(file_name+'.h5py', 'w')
