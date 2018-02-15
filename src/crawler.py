@@ -15,6 +15,12 @@ end_line = int(input('End at line (inclusive): '));
 path_name = pad(start_line) + '-' + pad(end_line)
 temp_file = '../' + path_name + '.tmp'
 
+if not os.path.exists("../posters"):
+    os.makedirs("../posters")
+
+if not os.path.exists("../genres-list"):
+    os.makedirs("../genres-list")
+
 countries = ['USA', 'UK', 'Thai']
 counter = 0
 
@@ -96,7 +102,7 @@ with open(temp_file, 'r') as duplicate:
     lines=duplicate.readlines()
     uniquelines=set(lines)
 
-    with open('../'+path_name+'.txt', 'w') as unique:
+    with open('../genres-list/'+path_name+'.txt', 'w') as unique:
         unique.writelines(uniquelines)
 
 try:
