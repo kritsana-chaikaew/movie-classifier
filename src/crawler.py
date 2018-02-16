@@ -31,7 +31,12 @@ for i, line in enumerate(f):
     if i + 1 > end_line:
         break
 
+    retry_count = 0
     while True:
+        retry_count += 1
+        if retry_count >= 20:
+            break
+            
         print(i + 1, movie_id, end='\t')
         try:
             browser = RoboBrowser(history=True, parser='html.parser', timeout=10)
