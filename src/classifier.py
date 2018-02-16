@@ -65,6 +65,10 @@ movie_model.add(Flatten())
 movie_model.add(Dense(128, activation='relu'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(Dropout(0.2))
+
+movie_model.add(Dense(128, activation='relu'))
+movie_model.add(LeakyReLU(alpha=0.1))
+movie_model.add(Dropout(0.2))
 movie_model.add(Dense(num_classes, activation='softmax'))
 
 movie_model.compile(
