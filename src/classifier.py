@@ -29,9 +29,9 @@ train_X, test_X, train_Y_one_hot, test_Y_one_hot = \
 train_X, valid_X, train_label, valid_label = \
         train_test_split(
                 train_X, train_Y_one_hot,
-                test_size=0.2, random_state=13)
+                test_size=0.5, random_state=13)
 
-batch_size = 1
+batch_size = 32
 epochs = 20
 num_classes = len(classes)
 
@@ -39,32 +39,32 @@ movie_model = Sequential()
 movie_model.add(Conv2D(
         32,
         kernel_size=(3, 3),
-        activation='linear',
+        activation='relu',
         padding='same',
         input_shape=(X.shape[1], X.shape[2], 3)))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D((2, 2),padding='same'))
 movie_model.add(Dropout(0.2))
 
-movie_model.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+movie_model.add(Conv2D(64, (3, 3), activation='relu',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.3))
+movie_model.add(Dropout(0.2))
 
-movie_model.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+movie_model.add(Conv2D(128, (3, 3), activation='relu',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.3))
+movie_model.add(Dropout(0.2))
 
 movie_model.add(Flatten())
-movie_model.add(Dense(128, activation='linear'))
+movie_model.add(Dense(128, activation='relu'))
 movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(Dropout(0.3))
+movie_model.add(Dropout(0.2))
 movie_model.add(Dense(num_classes, activation='softmax'))
 
 movie_model.compile(
         loss=keras.losses.categorical_crossentropy,
-        optimizer=keras.optimizers.Adam(lr=0.001),
+        optimizer=keras.optimizers.Adam(),
         metrics=['accuracy'])
 
 if augmentation == 'y' or augmentation == 'Y':
