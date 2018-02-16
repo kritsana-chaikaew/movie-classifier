@@ -31,7 +31,7 @@ train_X, valid_X, train_label, valid_label = \
                 train_X, train_Y_one_hot,
                 test_size=0.5, random_state=13)
 
-batch_size = 32
+batch_size = 64
 epochs = 20
 num_classes = len(classes)
 
@@ -47,6 +47,11 @@ movie_model.add(MaxPooling2D((2, 2),padding='same'))
 movie_model.add(Dropout(0.2))
 
 movie_model.add(Conv2D(64, (3, 3), activation='relu',padding='same'))
+movie_model.add(LeakyReLU(alpha=0.1))
+movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+movie_model.add(Dropout(0.2))
+
+movie_model.add(Conv2D(128, (3, 3), activation='relu',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
 movie_model.add(Dropout(0.2))
