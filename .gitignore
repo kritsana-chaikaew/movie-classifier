@@ -2,3 +2,6 @@ vm
 posters
 *.h5py
 [0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9].*
+datasets/*
+models
+!datasets/classes.txt
