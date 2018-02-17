@@ -12,6 +12,7 @@ from keras.layers.advanced_activations import LeakyReLU
 
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
+import os
 
 dataset_name = str(input('Dataset Name: '))
 augmentation = str(input('Data Augmentation [y/N]: '))
@@ -152,5 +153,4 @@ if not os.path.exists("../models"):
 
 if str(input('Save model? [y/n]: ')) == 'y':
     save_name = str(input('Save name: '))
-    with open('../models/'+save_name) as file_model:
-        movie_model.save(file_model)
+    movie_model.save('../models/'+save_name+'.h5py')
