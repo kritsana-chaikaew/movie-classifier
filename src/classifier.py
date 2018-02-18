@@ -13,25 +13,29 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
 import os
+from keras.optimizers import SGD, Adam
 
 dataset_name = str(input('Dataset Name: '))
 augmentation = str(input('Data Augmentation [y/N]: '))
 
 with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'r') as file_data:
-    X = file_data['X'][:] / 255
+    X = file_data['X'][:].astype('float32') / 255
     Y = file_data['Y'][:]
 with open('../datasets/classes.txt') as file_classes:
     classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
+with open('../datasets/'+dataset_name+'/ids.txt') as file_ids:
+    ids = np.loadtxt(file_ids, dtype='U', usecols=(0,))
 
 print('Data shape: ', X.shape)
-plt.imshow(X[0])
-plt.title('Class %d' % Y[0])
-plt.show()
 
 train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.15)
 
 train_X, valid_X, train_Y, valid_Y = \
         train_test_split(train_X, train_Y, test_size=0.2)
+
+plt.imshow(X[100])
+plt.title('Title %s Class %d (%s)' % (ids[100], Y[100], classes[Y[100]]))
+plt.show()
 
 batch_size = int(input('Batch size [64]: ') or 64)
 epochs = int(input('Epochs [20]: ') or 20)
@@ -51,32 +55,41 @@ movie_model.add(Conv2D(
         input_shape=input_shape))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D((2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
+# movie_model.add(Dropout(0.5))
 
 movie_model.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
+# movie_model.add(Dropout(0.5))
 
 movie_model.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
+# movie_model.add(Dropout(0.2))
+
+movie_model.add(Conv2D(256, (3, 3), activation='linear',padding='same'))
+movie_model.add(LeakyReLU(alpha=0.1))
+movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+# movie_model.add(Dropout(0.2))
+
+movie_model.add(Conv2D(512, (3, 3), activation='linear',padding='same'))
+movie_model.add(LeakyReLU(alpha=0.1))
+movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+# movie_model.add(Dropout(0.2))
 
 movie_model.add(Flatten())
 movie_model.add(Dense(128, activation='linear'))
 movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(Dropout(0.2))
+movie_model.add(Dropout(0.5))
 
-movie_model.add(Dense(128, activation='linear'))
-movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(Dropout(0.2))
 movie_model.add(Dense(num_classes, activation='softmax'))
 
 movie_model.compile(
         loss=keras.losses.categorical_crossentropy,
-        optimizer=keras.optimizers.Adam(),
+        optimizer=Adam(),
         metrics=['accuracy'])
+
+movie_model.summary()
 
 if augmentation == 'y' or augmentation == 'Y':
     print('using data augmentation')
