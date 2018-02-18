@@ -33,10 +33,6 @@ train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.15)
 train_X, valid_X, train_Y, valid_Y = \
         train_test_split(train_X, train_Y, test_size=0.2)
 
-plt.imshow(X[100])
-plt.title('Title %s Class %d (%s)' % (ids[100], Y[100], classes[Y[100]]))
-plt.show()
-
 batch_size = int(input('Batch size [64]: ') or 64)
 epochs = int(input('Epochs [20]: ') or 20)
 num_classes = len(classes)
@@ -55,27 +51,27 @@ movie_model.add(Conv2D(
         input_shape=input_shape))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D((2, 2),padding='same'))
-# movie_model.add(Dropout(0.5))
+movie_model.add(Dropout(0.2))
 
 movie_model.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-# movie_model.add(Dropout(0.5))
+movie_model.add(Dropout(0.2))
 
 movie_model.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-# movie_model.add(Dropout(0.2))
+movie_model.add(Dropout(0.2))
 
 movie_model.add(Conv2D(256, (3, 3), activation='linear',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-# movie_model.add(Dropout(0.2))
+movie_model.add(Dropout(0.2))
 
 movie_model.add(Conv2D(512, (3, 3), activation='linear',padding='same'))
 movie_model.add(LeakyReLU(alpha=0.1))
 movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-# movie_model.add(Dropout(0.2))
+movie_model.add(Dropout(0.2))
 
 movie_model.add(Flatten())
 movie_model.add(Dense(128, activation='linear'))
@@ -140,8 +136,7 @@ plt.title('Training and validation loss')
 plt.legend()
 plt.show()
 
-predicted_classes = movie_model.predict(test_X)
-predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
+predicted_classes = movie_model.predict_classes(test_X)
 
 correct = np.where(predicted_classes==test_Y)[0]
 print("Found %d correct labels" % len(correct))
