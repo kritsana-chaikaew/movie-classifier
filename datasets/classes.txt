@@ -1,5 +1,4 @@
 Action
-Adult
 Adventure
 Animation
 Biography
