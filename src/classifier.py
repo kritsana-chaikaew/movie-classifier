@@ -16,31 +16,7 @@ import os
 from keras.optimizers import SGD, Adam
 from keras import regularizers
 
-dataset_name = str(input('Dataset Name: '))
-with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'r') as file_data:
-    X = file_data['X'][:].astype('float32') / 255
-    Y = file_data['Y'][:]
-with open('../datasets/classes.txt') as file_classes:
-    classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
-    num_classes = len(classes)
-with open('../datasets/'+dataset_name+'/ids.txt') as file_ids:
-    ids = np.loadtxt(file_ids, dtype='U', usecols=(0,))
-
-print('Data shape: ', X.shape)
-
-train_X, valid_X, train_Y, valid_Y = train_test_split(X, Y, test_size=0.2)
-
-if str(input('Load model? [y/n]: ')) == 'y':
-    model_name = str(input('Model name: '))
-    model = load_model('../models/'+model_name+'.h5py')
-else:
-    batch_size = int(input('Batch size [64]: ') or 64)
-    epochs = int(input('Epochs [20]: ') or 20)
-    input_shape = X[0].shape
-
-    train_label = to_categorical(train_Y, num_classes)
-    valid_label = to_categorical(valid_Y, num_classes)
-
+def construct_model ():
     model = Sequential()
     model.add(BatchNormalization(input_shape=input_shape))
     model.add(Conv2D(64, (3, 3), activation='relu'))
@@ -73,6 +49,33 @@ else:
             metrics=['accuracy'])
 
     model.summary()
+
+    return model
+
+dataset_name = str(input('Dataset Name: '))
+with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'r') as file_data:
+    X = file_data['X'][:].astype('float32') / 255
+    Y = file_data['Y'][:]
+with open('../datasets/classes.txt') as file_classes:
+    classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
+    num_classes = len(classes)
+with open('../datasets/'+dataset_name+'/ids.txt') as file_ids:
+    ids = np.loadtxt(file_ids, dtype='U', usecols=(0,))
+
+train_X, valid_X, train_Y, valid_Y = train_test_split(X, Y, test_size=0.2)
+
+if str(input('Load model? [y/n]: ')) == 'y':
+    model_name = str(input('Model name: '))
+    model = load_model('../models/'+model_name+'.h5py')
+else:
+    batch_size = int(input('Batch size [64]: ') or 64)
+    epochs = int(input('Epochs [20]: ') or 20)
+    input_shape = X[0].shape
+
+    train_label = to_categorical(train_Y, num_classes)
+    valid_label = to_categorical(valid_Y, num_classes)
+
+    model = construct_model()
     train = model.fit(
             train_X, train_label,
             batch_size=batch_size,
