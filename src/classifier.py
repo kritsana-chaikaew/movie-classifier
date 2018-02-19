@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 import keras
-from keras.models import Sequential, Model
+from keras.models import Sequential, Model, load_model
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.advanced_activations import LeakyReLU
@@ -30,69 +30,73 @@ print('Data shape: ', X.shape)
 
 train_X, valid_X, train_Y, valid_Y = train_test_split(X, Y, test_size=0.2)
 
-batch_size = int(input('Batch size [64]: ') or 64)
-epochs = int(input('Epochs [20]: ') or 20)
-input_shape = X[0].shape
+if str(input('Load model? [y/n]: ')) == 'y':
+    model_name = str(input('Model name: '))
+    model = load_model('../models/'+model_name+'.h5py')
+else:
+    batch_size = int(input('Batch size [64]: ') or 64)
+    epochs = int(input('Epochs [20]: ') or 20)
+    input_shape = X[0].shape
 
-train_label = to_categorical(train_Y, num_classes)
-valid_label = to_categorical(valid_Y, num_classes)
+    train_label = to_categorical(train_Y, num_classes)
+    valid_label = to_categorical(valid_Y, num_classes)
 
-model = Sequential()
-model.add(BatchNormalization(input_shape=input_shape))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.5))
+    model = Sequential()
+    model.add(BatchNormalization(input_shape=input_shape))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.5))
 
-model.add(BatchNormalization())
-model.add(Conv2D(128, (3, 3), activation='relu'))
-model.add(Conv2D(128, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.5))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, (3, 3), activation='relu'))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.5))
 
-model.add(BatchNormalization())
-model.add(Conv2D(256, (3, 3), activation='relu'))
-model.add(Conv2D(256, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.5))
+    model.add(BatchNormalization())
+    model.add(Conv2D(256, (3, 3), activation='relu'))
+    model.add(Conv2D(256, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.5))
 
-model.add(BatchNormalization())
-model.add(Flatten())
-model.add(Dense(256, activation='relu'))
-model.add(Dropout(0.5))
+    model.add(BatchNormalization())
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.5))
 
-model.add(Dense(num_classes, activation='softmax'))
+    model.add(Dense(num_classes, activation='softmax'))
 
-model.compile(
-        loss=keras.losses.categorical_crossentropy,
-        optimizer=Adam(lr=0.0001),
-        metrics=['accuracy'])
+    model.compile(
+            loss=keras.losses.categorical_crossentropy,
+            optimizer=Adam(lr=0.0001),
+            metrics=['accuracy'])
 
-model.summary()
-train = model.fit(
-        train_X, train_label,
-        batch_size=batch_size,
-        epochs=epochs,verbose=1,
-        validation_data=(valid_X, valid_label))
+    model.summary()
+    train = model.fit(
+            train_X, train_label,
+            batch_size=batch_size,
+            epochs=epochs,verbose=1,
+            validation_data=(valid_X, valid_label))
 
-accuracy = train.history['acc']
-val_accuracy = train.history['val_acc']
-loss = train.history['loss']
-val_loss = train.history['val_loss']
-epochs = range(len(accuracy))
-plt.figure(figsize=(10, 5))
-plt.subplot(1, 2, 1)
-plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
-plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
-plt.title('Training and validation accuracy')
-plt.legend()
+    accuracy = train.history['acc']
+    val_accuracy = train.history['val_acc']
+    loss = train.history['loss']
+    val_loss = train.history['val_loss']
+    epochs = range(len(accuracy))
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
+    plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+    plt.title('Training and validation accuracy')
+    plt.legend()
 
-plt.subplot(1, 2, 2)
-plt.plot(epochs, loss, 'bo', label='Training loss')
-plt.plot(epochs, val_loss, 'b', label='Validation loss')
-plt.title('Training and validation loss')
-plt.legend()
-plt.show()
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs, loss, 'bo', label='Training loss')
+    plt.plot(epochs, val_loss, 'b', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.legend()
+    plt.show()
 
 predicted_classes = model.predict_classes(valid_X)
 
@@ -118,5 +122,5 @@ if not os.path.exists("../models"):
     os.makedirs("../models")
 
 if str(input('Save model? [y/n]: ')) == 'y':
-    model_name = str(input('Save name: '))
+    model_name = str(input('Model name: '))
     model.save('../models/'+model_name+'.h5py')
