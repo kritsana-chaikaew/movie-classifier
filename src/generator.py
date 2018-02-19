@@ -19,6 +19,7 @@ dataset_name = str(input('Dataset name: '));
 image_height = int(input('Image height: '))
 image_width = image_height * 2 // 3
 print('Image width: ', image_width)
+is_gen_classes = str(input('Generate clsses file? [y/n]: '))
 
 X = np.empty((0, image_height, image_width, 3), dtype='uint8')
 Y = np.empty((0,), dtype='uint8')
@@ -51,7 +52,7 @@ classes = np.unique(genres_all)
 data_len = len(ids_all)
 is_preview = False
 
-num_data = int(input('Number of data: ') or data_len)
+num_data = int(input('Number of data [all]: ') or data_len)
 for i, id_, genre in zip(range(data_len), ids_all, genres_all):
     image_path = '../posters/' + id_ + '.jpg'
 
@@ -82,7 +83,7 @@ for i, id_, genre in zip(range(data_len), ids_all, genres_all):
     sys.stdout.write("{0:.2f} %".format(i*100/data_len))
     sys.stdout.flush()
 
-print(ids.shape)
+print('\n'+str(ids.shape))
 
 if not os.path.exists('../datasets'):
     os.makedirs('../datasets')
@@ -97,5 +98,6 @@ with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'w') as fil
 with open('../datasets/'+dataset_name+'/ids.txt', 'w') as file_ids:
     np.savetxt(file_ids, ids, fmt='%s', newline='\n')
 
-with open('../datasets/classes.txt', 'w') as file_classes:
-    np.savetxt(file_classes, classes, fmt='%s', newline='\n')
+if is_gen_classes == 'y':
+    with open('../datasets/classes.txt', 'w') as file_classes:
+        np.savetxt(file_classes, classes, fmt='%s', newline='\n')

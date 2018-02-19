@@ -8,23 +8,25 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.advanced_activations import LeakyReLU
-
+from keras.layers.normalization import BatchNormalization
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
+
 import os
+from keras.optimizers import SGD, Adam
+from keras import regularizers
 
 dataset_name = str(input('Dataset Name: '))
-with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'r') as dataset:
-    X = dataset['X'][:] / 255
-    Y = dataset['Y'][:]
+with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'r') as file_data:
+    X = file_data['X'][:].astype('float32') / 255
+    Y = file_data['Y'][:]
 with open('../datasets/classes.txt') as file_classes:
     classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
     num_classes = len(classes)
+with open('../datasets/'+dataset_name+'/ids.txt') as file_ids:
+    ids = np.loadtxt(file_ids, dtype='U', usecols=(0,))
 
 print('Data shape: ', X.shape)
-plt.imshow(X[0])
-plt.title('Class %d' % Y[0])
-plt.show()
 
 train_X, valid_X, train_Y, valid_Y = train_test_split(X, Y, test_size=0.2)
 
@@ -36,51 +38,47 @@ train_label = to_categorical(train_Y, num_classes)
 valid_label = to_categorical(valid_Y, num_classes)
 
 model = Sequential()
-model.add(Conv2D(
-        32,
-        kernel_size=(3, 3),
-        activation='linear',
-        padding='same',
-        input_shape=input_shape))
-model.add(LeakyReLU(alpha=0.1))
-model.add(MaxPooling2D((2, 2),padding='same'))
-model.add(Dropout(0.2))
+model.add(BatchNormalization(input_shape=input_shape))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.5))
 
-model.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
-model.add(LeakyReLU(alpha=0.1))
-model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-model.add(Dropout(0.2))
+model.add(BatchNormalization())
+model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.5))
 
-model.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
-model.add(LeakyReLU(alpha=0.1))
-model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-model.add(Dropout(0.2))
+model.add(BatchNormalization())
+model.add(Conv2D(256, (3, 3), activation='relu'))
+model.add(Conv2D(256, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.5))
 
+model.add(BatchNormalization())
 model.add(Flatten())
-model.add(Dense(128, activation='linear'))
-model.add(LeakyReLU(alpha=0.1))
-model.add(Dropout(0.2))
+model.add(Dense(256, activation='relu'))
+model.add(Dropout(0.5))
 
-model.add(Dense(128, activation='linear'))
-model.add(LeakyReLU(alpha=0.1))
-model.add(Dropout(0.2))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(
         loss=keras.losses.categorical_crossentropy,
-        optimizer=keras.optimizers.Adam(),
+        optimizer=Adam(lr=0.0001),
         metrics=['accuracy'])
 
-movie_train = model.fit(
+model.summary()
+train = model.fit(
         train_X, train_label,
         batch_size=batch_size,
         epochs=epochs,verbose=1,
         validation_data=(valid_X, valid_label))
 
-accuracy = movie_train.history['acc']
-val_accuracy = movie_train.history['val_acc']
-loss = movie_train.history['loss']
-val_loss = movie_train.history['val_loss']
+accuracy = train.history['acc']
+val_accuracy = train.history['val_acc']
+loss = train.history['loss']
+val_loss = train.history['val_loss']
 epochs = range(len(accuracy))
 plt.figure(figsize=(10, 5))
 plt.subplot(1, 2, 1)
@@ -96,8 +94,7 @@ plt.title('Training and validation loss')
 plt.legend()
 plt.show()
 
-predicted_classes = model.predict(valid_X)
-predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
+predicted_classes = model.predict_classes(valid_X)
 
 correct = np.where(predicted_classes == valid_Y)[0]
 print("Found %d correct labels" % len(correct))
