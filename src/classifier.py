@@ -14,6 +14,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
 import os
 from keras.optimizers import SGD, Adam
+from keras import regularizers
 
 dataset_name = str(input('Dataset Name: '))
 augmentation = str(input('Data Augmentation [y/N]: '))
@@ -43,46 +44,34 @@ test_label = to_categorical(test_Y, num_classes)
 valid_label = to_categorical(valid_Y, num_classes)
 
 movie_model = Sequential()
-movie_model.add(Conv2D(
-        32,
-        kernel_size=(3, 3),
-        activation='linear',
-        padding='same',
-        input_shape=input_shape))
-movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(MaxPooling2D((2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
+movie_model.add(BatchNormalization(input_shape=input_shape))
+movie_model.add(Conv2D(64, (3, 3), activation='relu'))
+movie_model.add(Conv2D(64, (3, 3), activation='relu'))
+movie_model.add(MaxPooling2D(pool_size=(2, 2)))
+movie_model.add(Dropout(0.5))
 
-movie_model.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
-movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
+movie_model.add(BatchNormalization())
+movie_model.add(Conv2D(128, (3, 3), activation='relu'))
+movie_model.add(Conv2D(128, (3, 3), activation='relu'))
+movie_model.add(MaxPooling2D(pool_size=(2, 2)))
+movie_model.add(Dropout(0.5))
 
-movie_model.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
-movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
+movie_model.add(BatchNormalization())
+movie_model.add(Conv2D(256, (3, 3), activation='relu'))
+movie_model.add(Conv2D(256, (3, 3), activation='relu'))
+movie_model.add(MaxPooling2D(pool_size=(2, 2)))
+movie_model.add(Dropout(0.5))
 
-movie_model.add(Conv2D(256, (3, 3), activation='linear',padding='same'))
-movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
-
-movie_model.add(Conv2D(512, (3, 3), activation='linear',padding='same'))
-movie_model.add(LeakyReLU(alpha=0.1))
-movie_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
-movie_model.add(Dropout(0.2))
-
+movie_model.add(BatchNormalization())
 movie_model.add(Flatten())
-movie_model.add(Dense(128, activation='linear'))
-movie_model.add(LeakyReLU(alpha=0.1))
+movie_model.add(Dense(256, activation='relu'))
 movie_model.add(Dropout(0.5))
 
 movie_model.add(Dense(num_classes, activation='softmax'))
 
 movie_model.compile(
         loss=keras.losses.categorical_crossentropy,
-        optimizer=Adam(),
+        optimizer=Adam(lr=0.0001),
         metrics=['accuracy'])
 
 movie_model.summary()
