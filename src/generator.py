@@ -17,7 +17,7 @@ def img2arr(img):
 dataset_name = str(input('Dataset name: '));
 
 image_height = int(input('Image height: '))
-image_width = image_height * 2 // 3
+image_width = image_height
 print('Image width: ', image_width)
 is_gen_classes = str(input('Generate clsses file? [y/n]: '))
 
@@ -47,15 +47,33 @@ for genre_set in genre_sets:
     genre = genre_set.split(':')[0]
     genres_all = np.append(genres_all, [genre], axis=0)
 
-classes = np.unique(genres_all)
+interest_genres = [
+        'Action',
+        'Adventure',
+        'Animation',
+        'Biography',
+        'Comedy',
+        'Crime',
+        'Documentary',
+        'Drama',
+        'Family',
+        'Fantasy',
+        'Horror',
+        'Mystery',
+        'Sci-Fi',
+        'Thriller']
+classes = np.unique(interest_genres)
 
 data_len = len(ids_all)
 is_preview = False
 
+
 num_data = int(input('Number of data [all]: ') or data_len)
 for i, id_, genre in zip(range(data_len), ids_all, genres_all):
-    image_path = '../posters/' + id_ + '.jpg'
+    if genre not in interest_genres:
+        continue
 
+    image_path = '../posters/' + id_ + '.jpg'
     if i >= num_data:
         break
     if not os.path.isfile(image_path):
