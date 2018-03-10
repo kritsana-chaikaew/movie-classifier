@@ -27,7 +27,7 @@ ids_genres = np.empty((0, 2), dtype='U')
 genres_all = np.empty((0), dtype='U')
 ids = np.empty((0,), dtype='U')
 
-pattern = '../genre_list/' + ('[0-9]' * 6 + '-' + '[0-9]' * 6 + '.txt')
+pattern = '../genre_list/' + ('all.txt')
 files = glob.glob(pattern)
 
 if len(files) == 0:
@@ -54,7 +54,6 @@ interest_genres = [
         'Biography',
         'Comedy',
         'Crime',
-        'Documentary',
         'Drama',
         'Family',
         'Fantasy',
