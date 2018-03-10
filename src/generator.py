@@ -17,7 +17,7 @@ def img2arr(img):
 dataset_name = str(input('Dataset name: '));
 
 image_height = int(input('Image height: '))
-image_width = image_height
+image_width = image_height * 2 // 3
 print('Image width: ', image_width)
 is_gen_classes = str(input('Generate clsses file? [y/n]: '))
 
@@ -27,7 +27,7 @@ ids_genres = np.empty((0, 2), dtype='U')
 genres_all = np.empty((0), dtype='U')
 ids = np.empty((0,), dtype='U')
 
-pattern = '../genre_list/' + ('all.txt')
+pattern = '../genre_list/all.txt'
 files = glob.glob(pattern)
 
 if len(files) == 0:
