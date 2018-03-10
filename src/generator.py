@@ -2,7 +2,7 @@ import numpy as np
 
 from keras.preprocessing.image import img_to_array
 from PIL import Image
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import h5py
 import sys
@@ -89,11 +89,11 @@ for i, id_, genre in zip(range(data_len), ids_all, genres_all):
         del resized_image
         del image
 
-        if not is_preview:
-            plt.imshow(X[0]/255)
-            plt.title('ID '+id_+' Class '+str(Y[0]))
-            plt.show()
-            is_preview = True
+        # if not is_preview:
+        #     plt.imshow(X[0]/255)
+        #     plt.title('ID '+id_+' Class '+str(Y[0]))
+        #     plt.show()
+        #     is_preview = True
 
     sys.stdout.write("\b"*20)
     sys.stdout.flush()
