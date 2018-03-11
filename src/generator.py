@@ -69,36 +69,40 @@ is_preview = False
 
 num_data = int(input('Number of data [all]: ') or data_len)
 for i, id_, genre in zip(range(data_len), ids_all, genres_all):
-    if genre not in interest_genres:
-        continue
+    try:
+        if genre not in interest_genres:
+            continue
 
-    image_path = '../posters/' + id_ + '.jpg'
-    if i >= num_data:
-        break
-    if not os.path.isfile(image_path):
-        continue
-    with open(image_path, 'rb') as f:
-        image = Image.open(f)
-        resized_image = image.resize(
-                (image_width, image_height),
-                Image.NEAREST)
-        X = np.append(X, img2arr(resized_image), axis=0)
-        Y = np.append(Y, np.where(classes==genre)[0].astype('uint8'), axis=0)
-        ids = np.append(ids, [id_], axis=0)
-        image.close()
-        del resized_image
-        del image
+        image_path = '../posters/' + id_ + '.jpg'
+        if i >= num_data:
+            break
+        if not os.path.isfile(image_path):
+            continue
+        with open(image_path, 'rb') as f:
+            image = Image.open(f)
+            resized_image = image.resize(
+                    (image_width, image_height),
+                    Image.NEAREST)
+            X = np.append(X, img2arr(resized_image), axis=0)
+            Y = np.append(Y, np.where(classes==genre)[0].astype('uint8'), axis=0)
+            ids = np.append(ids, [id_], axis=0)
+            image.close()
+            del resized_image
+            del image
 
-        # if not is_preview:
-        #     plt.imshow(X[0]/255)
-        #     plt.title('ID '+id_+' Class '+str(Y[0]))
-        #     plt.show()
-        #     is_preview = True
+            # if not is_preview:
+            #     plt.imshow(X[0]/255)
+            #     plt.title('ID '+id_+' Class '+str(Y[0]))
+            #     plt.show()
+            #     is_preview = True
 
-    sys.stdout.write("\b"*20)
-    sys.stdout.flush()
-    sys.stdout.write("{0:.2f} %".format(i*100/data_len))
-    sys.stdout.flush()
+        sys.stdout.write("\b"*20)
+        sys.stdout.flush()
+        sys.stdout.write("{0:.2f} %".format(i*100/data_len))
+        sys.stdout.flush()
+
+    except:
+        pass
 
 print('\n'+str(ids.shape))
 
