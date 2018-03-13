@@ -42,7 +42,7 @@ def construct_model ():
 
 dataset_name = str(input('Dataset Name: '))
 with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'r') as file_data:
-    X = file_data['X'][:].astype('float32') / 255
+    X = file_data['X'][:]
     Y = file_data['Y'][:]
 with open('../datasets/classes.txt') as file_classes:
     classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
@@ -50,6 +50,9 @@ with open('../datasets/classes.txt') as file_classes:
 with open('../datasets/'+dataset_name+'/ids.txt') as file_ids:
     ids = np.loadtxt(file_ids, dtype='U', usecols=(0,))
 
+for x in X:
+    x = x.astype('float32') / 255
+    
 train_X, valid_X, train_Y, valid_Y = train_test_split(X, Y, test_size=0.2)
 
 if str(input('Load model? [y/n]: ')) == 'y':
