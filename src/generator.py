@@ -46,8 +46,8 @@ num_data = num_data == -1 and data_len or num_data
 
 interest_genres = [
         # 'Action',
-        'Adventure',
-        # 'Animation',
+        # 'Adventure',
+        'Animation',
         # 'Biography',
         # 'Comedy',
         # 'Crime',
