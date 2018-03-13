@@ -13,7 +13,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
 
 import os
-from keras.optimizers import SGD, Adam
+from keras.optimizers import SGD
 from keras import regularizers
 
 def construct_model ():
@@ -52,7 +52,7 @@ with open('../datasets/'+dataset_name+'/ids.txt') as file_ids:
 
 for x in X:
     x = x.astype('float32') / 255
-    
+
 train_X, valid_X, train_Y, valid_Y = train_test_split(X, Y, test_size=0.2)
 
 if str(input('Load model? [y/n]: ')) == 'y':
@@ -70,7 +70,7 @@ else:
 
     model.compile(
             loss=keras.losses.categorical_crossentropy,
-            optimizer=Adam(lr=0.0001),
+            optimizer=SGD(lr=0.01, momentum=0.2, decay=0.0, nesterov=False),
             metrics=['accuracy'])
     model.summary()
 
@@ -87,22 +87,33 @@ else:
     epochs = range(len(accuracy))
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
-    plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
+    plt.plot(epochs, accuracy, 'r', label='Training accuracy')
     plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
     plt.title('Training and validation accuracy')
     plt.legend()
 
     plt.subplot(1, 2, 2)
-    plt.plot(epochs, loss, 'bo', label='Training loss')
+    plt.plot(epochs, loss, 'r', label='Training loss')
     plt.plot(epochs, val_loss, 'b', label='Validation loss')
     plt.title('Training and validation loss')
     plt.legend()
     plt.show()
 
+    if not os.path.exists("../models"):
+        os.makedirs("../models")
+
+    if str(input('Save model? [y/n]: ')) == 'y':
+        model_name = str(input('Model name: '))
+        model.save('../models/'+model_name+'.h5py')
+
 predicted_classes = model.predict_classes(valid_X)
 
 correct = np.where(predicted_classes == valid_Y)[0]
+incorrect = np.where(predicted_classes != valid_Y)[0]
 print("Found %d correct labels" % len(correct))
+print("Found %d incorrect labels" % len(incorrect))
+print("Accuracy", len(correct) / (len(correct) + len(incorrect)))
+
 for i, correct in enumerate(correct[:9]):
     plt.subplot(3, 3, i+1)
     plt.imshow(valid_X[correct])
@@ -110,18 +121,9 @@ for i, correct in enumerate(correct[:9]):
     plt.tight_layout()
 plt.show()
 
-incorrect = np.where(predicted_classes != valid_Y)[0]
-print("Found %d incorrect labels" % len(incorrect))
 for i, incorrect in enumerate(incorrect[:9]):
     plt.subplot(3, 3, i+1)
     plt.imshow(valid_X[incorrect])
     plt.title("Predicted {}, Class {}".format(predicted_classes[incorrect], valid_Y[incorrect]))
     plt.tight_layout()
 plt.show()
-
-if not os.path.exists("../models"):
-    os.makedirs("../models")
-
-if str(input('Save model? [y/n]: ')) == 'y':
-    model_name = str(input('Model name: '))
-    model.save('../models/'+model_name+'.h5py')
