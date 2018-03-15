@@ -17,7 +17,7 @@ from keras import regularizers
 import os
 import collections
 
-def construct_model ():
+def construct_model (input_shape, num_classes):
     model = Sequential()
     model.add(Conv2D(32, (3, 3), padding='same', activation='tanh', input_shape=input_shape))
     model.add(Conv2D(32, (3, 3), activation='tanh'))
@@ -101,7 +101,7 @@ def main():
         train_label = to_categorical(train_Y, num_classes)
         valid_label = to_categorical(valid_Y, num_classes)
 
-        model = construct_model()
+        model = construct_model(input_shape, num_classes)
 
         model.compile(
                 loss=keras.losses.categorical_crossentropy,
