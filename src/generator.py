@@ -39,7 +39,7 @@ interest_genres = [
         # 'Action',
         # 'Adventure',
         'Animation',
-        # 'Biography',
+        'Biography',
         # 'Comedy',
         # 'Crime',
         # 'Drama',

@@ -41,7 +41,7 @@ def construct_model ():
 
     return model
 
-def predict (valid_X, valid_Y):
+def predict (model, valid_X, valid_Y):
     predicted_classes = model.predict_classes(valid_X)
 
     correct = np.where(predicted_classes == valid_Y)[0]
@@ -49,8 +49,6 @@ def predict (valid_X, valid_Y):
     print("Found %d correct labels" % len(correct))
     print("Found %d incorrect labels" % len(incorrect))
     print("Accuracy", len(correct) / (len(correct) + len(incorrect)))
-    print(collections.Counter(predicted_classes))
-    print(collections.Counter(valid_Y))
 
     for i, correct in enumerate(correct[:9]):
         plt.subplot(3, 3, i+1)
@@ -84,67 +82,71 @@ def get_model (model_name):
 
 #--------------------------------------------------------------------------------------------------#
 
-dataset_name = str(input('Dataset Name: '))
-X, Y, train_X, valid_X, train_Y, valid_Y = get_data(dataset_name)
+def main():
+    dataset_name = str(input('Dataset Name: '))
+    X, Y, train_X, valid_X, train_Y, valid_Y = get_data(dataset_name)
 
-with open('../datasets/classes.txt') as file_classes:
-    classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
-    num_classes = len(classes)
+    with open('../datasets/classes.txt') as file_classes:
+        classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
+        num_classes = len(classes)
 
-if str(input('Load model? [y/n]: ')) == 'y':
-    model_name = str(input('Model name: '))
-    model = get_model(model_name)
-else:
-    batch_size = int(input('Batch size [64]: ') or 64)
-    epochs = int(input('Epochs [20]: ') or 20)
-    input_shape = X[0].shape
-
-    train_label = to_categorical(train_Y, num_classes)
-    valid_label = to_categorical(valid_Y, num_classes)
-
-    model = construct_model()
-
-    model.compile(
-            loss=keras.losses.categorical_crossentropy,
-            optimizer=SGD(lr=0.0001, momentum=0.2, decay=0.5, nesterov=True),
-            metrics=['accuracy'])
-    model.summary()
-
-    train = model.fit(
-            train_X, train_label,
-            batch_size=batch_size,
-            epochs=epochs,verbose=1,
-            validation_data=(valid_X, valid_label))
-
-    accuracy = train.history['acc']
-    val_accuracy = train.history['val_acc']
-    loss = train.history['loss']
-    val_loss = train.history['val_loss']
-    epochs = range(len(accuracy))
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.plot(epochs, accuracy, 'r', label='Training accuracy')
-    plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
-    plt.title('Training and validation accuracy')
-    plt.legend()
-
-    plt.subplot(1, 2, 2)
-    plt.plot(epochs, loss, 'r', label='Training loss')
-    plt.plot(epochs, val_loss, 'b', label='Validation loss')
-    plt.title('Training and validation loss')
-    plt.legend()
-    plt.show()
-
-    if not os.path.exists("../models"):
-        os.makedirs("../models")
-
-    if str(input('Save model? [y/n]: ')) == 'y':
+    if str(input('Load model? [y/n]: ')) == 'y':
         model_name = str(input('Model name: '))
-        model.save('../models/'+model_name+'.h5py')
+        model = get_model(model_name)
+    else:
+        batch_size = int(input('Batch size [64]: ') or 64)
+        epochs = int(input('Epochs [20]: ') or 20)
+        input_shape = X[0].shape
 
-class_count = np.zeros(num_classes)
-for class_num in Y:
-    class_count[class_num] += 1;
-print(class_count)
+        train_label = to_categorical(train_Y, num_classes)
+        valid_label = to_categorical(valid_Y, num_classes)
 
-predict(valid_X, valid_Y)
+        model = construct_model()
+
+        model.compile(
+                loss=keras.losses.categorical_crossentropy,
+                optimizer=SGD(lr=0.0001, momentum=0.2, decay=0.5, nesterov=True),
+                metrics=['accuracy'])
+        model.summary()
+
+        train = model.fit(
+                train_X, train_label,
+                batch_size=batch_size,
+                epochs=epochs,verbose=1,
+                validation_data=(valid_X, valid_label))
+
+        accuracy = train.history['acc']
+        val_accuracy = train.history['val_acc']
+        loss = train.history['loss']
+        val_loss = train.history['val_loss']
+        epochs = range(len(accuracy))
+        plt.figure(figsize=(10, 5))
+        plt.subplot(1, 2, 1)
+        plt.plot(epochs, accuracy, 'r', label='Training accuracy')
+        plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+        plt.title('Training and validation accuracy')
+        plt.legend()
+
+        plt.subplot(1, 2, 2)
+        plt.plot(epochs, loss, 'r', label='Training loss')
+        plt.plot(epochs, val_loss, 'b', label='Validation loss')
+        plt.title('Training and validation loss')
+        plt.legend()
+        plt.show()
+
+        if not os.path.exists("../models"):
+            os.makedirs("../models")
+
+        if str(input('Save model? [y/n]: ')) == 'y':
+            model_name = str(input('Model name: '))
+            model.save('../models/'+model_name+'.h5py')
+
+    class_count = np.zeros(num_classes)
+    for class_num in Y:
+        class_count[class_num] += 1;
+    print(class_count)
+
+    predict(model, valid_X, valid_Y)
+
+if __name__ == "__main__":
+    main()
