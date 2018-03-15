@@ -6,7 +6,6 @@ from PIL import Image
 
 import h5py
 import sys
-import glob
 import os
 
 def img2arr(img):
@@ -27,15 +26,7 @@ Y = np.empty((0,), dtype='uint8')
 data_list = np.empty((0, 2), dtype='U')
 ids = np.empty((0,), dtype='U')
 
-files = glob.glob('../genre_list/all.txt')
-
-if len(files) == 0:
-    print('Download data first')
-    exit()
-
-for filename in files:
-    array = np.genfromtxt(filename, delimiter=',', dtype='U')
-    data_list = np.append(data_list, array, axis=0)
+data_list = np.genfromtxt('../genre_list/all.txt', delimiter=',', dtype='U')
 data_list = np.unique(data_list, axis=0)
 
 id_list = data_list[:, 0]

@@ -11,10 +11,11 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.normalization import BatchNormalization
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
-
-import os
 from keras.optimizers import SGD
 from keras import regularizers
+
+import os
+import collections
 
 def construct_model ():
     model = Sequential()
@@ -40,24 +41,59 @@ def construct_model ():
 
     return model
 
+def predict (valid_X, valid_Y):
+    predicted_classes = model.predict_classes(valid_X)
+
+    correct = np.where(predicted_classes == valid_Y)[0]
+    incorrect = np.where(predicted_classes != valid_Y)[0]
+    print("Found %d correct labels" % len(correct))
+    print("Found %d incorrect labels" % len(incorrect))
+    print("Accuracy", len(correct) / (len(correct) + len(incorrect)))
+    print(collections.Counter(predicted_classes))
+    print(collections.Counter(valid_Y))
+
+    for i, correct in enumerate(correct[:9]):
+        plt.subplot(3, 3, i+1)
+        plt.imshow(valid_X[correct])
+        plt.title("Predicted {}, Class {}".format(predicted_classes[correct], valid_Y[correct]))
+        plt.tight_layout()
+    plt.show()
+
+    for i, incorrect in enumerate(incorrect[:9]):
+        plt.subplot(3, 3, i+1)
+        plt.imshow(valid_X[incorrect])
+        plt.title("Predicted {}, Class {}".format(predicted_classes[incorrect], valid_Y[incorrect]))
+        plt.tight_layout()
+    plt.show()
+
+    return predicted_classes
+
+def get_data (dataset_name, test_size = 0.2):
+    with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'r') as file_data:
+        X = file_data['X'][:]
+        Y = file_data['Y'][:]
+
+    for x in X:
+        x = x.astype('float32') / 255
+
+    train_X, valid_X, train_Y, valid_Y = train_test_split(X, Y, test_size=test_size)
+    return X, Y, train_X, valid_X, train_Y, valid_Y
+
+def get_model (model_name):
+    return load_model('../models/'+model_name+'.h5py')
+
+#--------------------------------------------------------------------------------------------------#
+
 dataset_name = str(input('Dataset Name: '))
-with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'r') as file_data:
-    X = file_data['X'][:]
-    Y = file_data['Y'][:]
+X, Y, train_X, valid_X, train_Y, valid_Y = get_data(dataset_name)
+
 with open('../datasets/classes.txt') as file_classes:
     classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
     num_classes = len(classes)
-with open('../datasets/'+dataset_name+'/ids.txt') as file_ids:
-    ids = np.loadtxt(file_ids, dtype='U', usecols=(0,))
-
-for x in X:
-    x = x.astype('float32') / 255
-
-train_X, valid_X, train_Y, valid_Y = train_test_split(X, Y, test_size=0.2)
 
 if str(input('Load model? [y/n]: ')) == 'y':
     model_name = str(input('Model name: '))
-    model = load_model('../models/'+model_name+'.h5py')
+    model = get_model(model_name)
 else:
     batch_size = int(input('Batch size [64]: ') or 64)
     epochs = int(input('Epochs [20]: ') or 20)
@@ -70,7 +106,7 @@ else:
 
     model.compile(
             loss=keras.losses.categorical_crossentropy,
-            optimizer=SGD(lr=0.01, momentum=0.2, decay=0.0, nesterov=False),
+            optimizer=SGD(lr=0.0001, momentum=0.2, decay=0.5, nesterov=True),
             metrics=['accuracy'])
     model.summary()
 
@@ -106,24 +142,9 @@ else:
         model_name = str(input('Model name: '))
         model.save('../models/'+model_name+'.h5py')
 
-predicted_classes = model.predict_classes(valid_X)
+class_count = np.zeros(num_classes)
+for class_num in Y:
+    class_count[class_num] += 1;
+print(class_count)
 
-correct = np.where(predicted_classes == valid_Y)[0]
-incorrect = np.where(predicted_classes != valid_Y)[0]
-print("Found %d correct labels" % len(correct))
-print("Found %d incorrect labels" % len(incorrect))
-print("Accuracy", len(correct) / (len(correct) + len(incorrect)))
-
-for i, correct in enumerate(correct[:9]):
-    plt.subplot(3, 3, i+1)
-    plt.imshow(valid_X[correct])
-    plt.title("Predicted {}, Class {}".format(predicted_classes[correct], valid_Y[correct]))
-    plt.tight_layout()
-plt.show()
-
-for i, incorrect in enumerate(incorrect[:9]):
-    plt.subplot(3, 3, i+1)
-    plt.imshow(valid_X[incorrect])
-    plt.title("Predicted {}, Class {}".format(predicted_classes[incorrect], valid_Y[incorrect]))
-    plt.tight_layout()
-plt.show()
+predict(valid_X, valid_Y)
