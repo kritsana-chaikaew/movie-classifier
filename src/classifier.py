@@ -86,7 +86,7 @@ def main():
     dataset_name = str(input('Dataset Name: '))
     X, Y, train_X, valid_X, train_Y, valid_Y = get_data(dataset_name)
 
-    with open('../datasets/classes.txt') as file_classes:
+    with open('../datasets/'+dataset_name+'/classes.txt') as file_classes:
         classes = np.loadtxt(file_classes, dtype='U', usecols=(0,))
         num_classes = len(classes)
 

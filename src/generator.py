@@ -2,7 +2,6 @@ import numpy as np
 
 from keras.preprocessing.image import img_to_array
 from PIL import Image
-# import matplotlib.pyplot as plt
 
 import h5py
 import sys
@@ -18,7 +17,6 @@ dataset_name = str(input('Dataset name: '));
 image_height = int(input('Image height: '))
 image_width = image_height * 2 // 3
 print('Image width: ', image_width)
-is_gen_classes = str(input('Generate class file? [y/n]: ') or 'y')
 num_data = int(input('Number of data [all]: ') or -1)
 
 X = np.empty((0, image_height, image_width, 3), dtype='uint8')
@@ -51,8 +49,6 @@ interest_genres = [
         # 'Thriller']
 classes = np.unique(interest_genres)
 
-# is_preview = False
-
 zipped = zip(range(data_len), id_list, genre_list)
 for i, id_, genre_set in zipped:
 
@@ -76,12 +72,6 @@ for i, id_, genre_set in zipped:
                     image.close()
                     del resized_image
                     del image
-
-                    # if not is_preview:
-                    #     plt.imshow(X[0]/255)
-                    #     plt.title('ID '+id_+' Class '+str(Y[0]))
-                    #     plt.show()
-                    #     is_preview = True
 
                 sys.stdout.write("\b"*20)
                 sys.stdout.flush()
@@ -108,6 +98,5 @@ with h5py.File('../datasets/'+dataset_name+'/'+dataset_name+'.h5py', 'w') as fil
 with open('../datasets/'+dataset_name+'/ids.txt', 'w') as file_ids:
     np.savetxt(file_ids, ids, fmt='%s', newline='\n')
 
-if is_gen_classes == 'y':
-    with open('../datasets/classes.txt', 'w') as file_classes:
-        np.savetxt(file_classes, classes, fmt='%s', newline='\n')
+with open('../datasets/'+dataset_name+'/classes.txt', 'w') as file_classes:
+    np.savetxt(file_classes, classes, fmt='%s', newline='\n')
