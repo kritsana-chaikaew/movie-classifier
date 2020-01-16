@@ -16,7 +16,7 @@ protobuf==3.5.1
 pyparsing==2.2.0
 python-dateutil==2.6.1
 pytz==2017.3
-PyYAML==3.12
+PyYAML==5.1
 requests==2.18.4
 robobrowser==0.5.3
 scikit-learn==0.19.1
